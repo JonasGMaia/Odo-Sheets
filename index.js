@@ -94,26 +94,22 @@
     }
     }
 
-    // --- O LOOP PRINCIPAL ---
+    // --- O LOOP DE TAREFAS (Versão GitHub Actions) ---
     async function iniciarMotor() {
-    console.log('🤖 Robô ligado e monitorando o Supabase (Ctrl+C para parar)...');
+    console.log('🤖 Robô ligado pelo GitHub Actions! Verificando fila...');
     
-    while (true) {
-        try {
-        const trabalhou = await processarLinksPendentes();
-        
-        if (trabalhou) {
-            // Se ele achou um link e trabalhou, espera só 2 segundos e já vai pro próximo da fila
-            await sleep(2000);
-        } else {
-            // Se a fila tá vazia, dorme 10 segundos antes de checar o banco de novo (economiza recursos)
-            await sleep(10000);
-        }
-        } catch (e) {
-        console.error('Erro crítico no motor:', e);
-        await sleep(10000); // Em caso de erro grave de conexão, dorme e tenta de novo depois
+    let temTrabalho = true;
+    
+    // Fica processando até a fila esvaziar
+    while (temTrabalho) {
+        temTrabalho = await processarLinksPendentes();
+        if (temTrabalho) {
+        await sleep(2000); // Pausa breve entre um link e outro
         }
     }
+    
+    console.log('🏁 Todos os links pendentes foram processados. Desligando...');
+    process.exit(0); // Força o desligamento para não gastar minutos extras
     }
 
     iniciarMotor();

@@ -1,0 +1,32 @@
+name: Robô de Viagens (Scraper)
+
+on:
+  schedule:
+    # Roda a cada 10 minutos
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Permite que você clique num botão para rodar manualmente se quiser
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Baixar o código
+      uses: actions/checkout@v4
+      
+    - name: Instalar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Instalar dependências
+      run: npm install
+      
+    - name: Instalar Navegadores do Playwright
+      run: npx playwright install chromium --with-deps
+      
+    - name: Rodar o Robô
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      run: npm start
