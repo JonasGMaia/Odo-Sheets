@@ -3,8 +3,6 @@ name: Robô de Viagens (Scraper)
 on:
   push:
     branches: [ "main", "master" ] # Isso força o GitHub a acordar em qualquer branch
-  schedule:
-    - cron: '*/10 * * * *'
   workflow_dispatch: # Permite que você clique num botão para rodar manualmente se quiser
 
 jobs:
