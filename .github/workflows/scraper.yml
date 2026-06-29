@@ -2,8 +2,8 @@ name: Robô de Viagens (Scraper)
 
 on:
   push:
-    branches: [ "main", "master" ] # Isso força o GitHub a acordar em qualquer branch
-  workflow_dispatch: # Permite que você clique num botão para rodar manualmente se quiser
+    branches: [ "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   run-scraper:
@@ -17,12 +17,33 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '22'
+        cache: 'npm' # 1. Ativa o cache automático do npm baseado no seu package-lock.json
+
+    # 2. Descobre a versão exata do Playwright para gerar uma chave de cache única
+    - name: Obter versão do Playwright para o Cache
+      id: playwright-version
+      run: echo "version=$(npm ls playwright | grep playwright | head -n 1 | awk -F@ '{print $2}')" >> $GITHUB_OUTPUT
         
+    - name: Verificar/Restaurar Cache do Playwright
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright # Pasta padrão onde o Playwright salva os navegadores no Linux
+        key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-
+
     - name: Instalar dependências
-      run: npm install
+      run: npm ci # 'npm ci' é muito mais rápido e seguro para ambientes de CI/CD do que 'npm install'
       
-    - name: Instalar Navegadores do Playwright
-      run: npx playwright install chromium --with-deps
+    # 3. Só baixa o Chromium se não houver um cache válido salvo de execuções anteriores
+    - name: Instalar Navegadores do Playwright (Apenas se necessário)
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install chromium
+      
+    # 4. Instala as dependências de sistema do Ubuntu (essencial para rodar o navegador em modo headless)
+    - name: Instalar dependências do sistema operacional
+      run: npx playwright install-deps chromium
       
     - name: Rodar o Robô
       env:

@@ -78,7 +78,8 @@
         await supabase
         .from('accommodations')
         .update({ title, price: priceNumber, bedrooms, beds, bathrooms, wifi, tv, air_conditioning, kitchen, petfriendly, parking })
-        .eq('id', hospedagem.id);
+        .eq('id', hospedagem.id)
+        .is('title', null);
 
         console.log('🎉 Finalizado com sucesso!');
         return true; // Retorna verdadeiro indicando que processou um link
